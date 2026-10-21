@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0c1016">
+    <meta name="description" content="Jogo de adivinhar palavras em 6 tentativas, com modo Normal e modo Infinito.">
+    <title>Termo</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%233f9564'/%3E%3Ctext x='50' y='70' font-size='62' font-weight='800' text-anchor='middle' fill='white' font-family='sans-serif'%3ET%3C/text%3E%3C/svg%3E">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="avisos" id="avisos" role="status" aria-live="polite"></div>
+
+<div class="app">
+
+    <!-- TOPO -->
+    <header class="topo">
+        <div class="logo">
+            <span>T</span><span>E</span><span>R</span><span>M</span><span>O</span>
+        </div>
+        <div class="topo-acoes">
+            <button class="icone-botao" id="btn-ajuda" aria-label="Ajuda">?</button>
+            <button class="icone-botao" id="btn-estatisticas" aria-label="Estatísticas">▦</button>
+        </div>
+    </header>
+
+    <!-- TELA INICIAL -->
+    <section class="tela ativa" id="tela-menu">
+        <div class="hero">
+            <h1>Descubra a palavra em 6 tentativas</h1>
+            <p>Escolha um modo e depois o tema que você quer jogar.</p>
+        </div>
+
+        <!-- exemplo animado de como o jogo funciona (só decoração) -->
+        <div class="tabuleiro previa" aria-hidden="true">
+            <div class="linha">
+                <div class="letra errada" style="--i:0">P</div>
+                <div class="letra existe" style="--i:1">R</div>
+                <div class="letra correta" style="--i:2">A</div>
+                <div class="letra errada" style="--i:3">T</div>
+                <div class="letra errada" style="--i:4">O</div>
+            </div>
+            <div class="linha">
+                <div class="letra correta" style="--i:6">T</div>
+                <div class="letra correta" style="--i:7">E</div>
+                <div class="letra correta" style="--i:8">R</div>
+                <div class="letra correta" style="--i:9">M</div>
+                <div class="letra correta" style="--i:10">O</div>
+            </div>
+        </div>
+
+        <h2 class="secao-titulo">Escolha o modo</h2>
+        <div class="modos">
+            <button class="modo modo-normal" id="btn-normal" data-modo="normal">
+                <div class="icone">N</div>
+                <h2>Normal</h2>
+                <p>Palavras de 5 letras, com o tema que você escolher.</p>
+            </button>
+
+            <button class="modo modo-infinito" id="btn-infinito" data-modo="infinito">
+                <div class="icone">∞</div>
+                <h2>Infinito</h2>
+                <p>Rodadas sem limite, e o tamanho da palavra fica escondido.</p>
+            </button>
+        </div>
+
+        <h2 class="secao-titulo">Como jogar</h2>
+        <ul class="legenda">
+            <li><span class="amostra correta">A</span><div><strong>Verde</strong>Letra no lugar certo</div></li>
+            <li><span class="amostra existe">A</span><div><strong>Amarelo</strong>Letra em outro lugar</div></li>
+            <li><span class="amostra errada">A</span><div><strong>Cinza</strong>A palavra não tem a letra</div></li>
+        </ul>
+    </section>
+
+    <!-- TELA DE ESCOLHA DO TEMA -->
+    <section class="tela" id="tela-temas">
+        <div class="barra-jogo">
+            <button class="voltar" id="btn-voltar-temas">← Menu</button>
+            <span class="etiqueta-modo" id="modo-temas">Normal</span>
+        </div>
+
+        <div class="hero">
+            <h1>Escolha o tema</h1>
+            <p id="texto-temas"></p>
+        </div>
+
+        <!-- O JavaScript cria os botões de tema aqui dentro -->
+        <div class="temas" id="lista-temas"></div>
+    </section>
+
+    <!-- TELA DO JOGO -->
+    <section class="tela" id="tela-jogo">
+
+        <div class="barra-jogo">
+            <button class="voltar" id="btn-voltar">← Menu</button>
+            <div class="info-rodada">
+                <span class="etiqueta-tema" id="tema-atual">Geral</span>
+                <span class="etiqueta-modo" id="modo-atual">Normal</span>
+            </div>
+        </div>
+
+        <div class="placar">
+            <div><strong id="contador-tentativas">0/6</strong>tentativas</div>
+            <div><strong id="tempo">00:00</strong>tempo</div>
+            <div><strong id="vitorias">0</strong>vitórias</div>
+        </div>
+
+        <p class="dica-tamanho" id="dica-tamanho">Palavra de 5 letras</p>
+
+        <!-- O JavaScript cria as linhas (.linha) com as letras (.letra) aqui dentro -->
+        <div class="tabuleiro" id="tabuleiro"></div>
+
+        <div class="teclado" id="teclado">
+            <div class="linha-teclado">
+                <button class="tecla" data-tecla="Q">q</button>
+                <button class="tecla" data-tecla="W">w</button>
+                <button class="tecla" data-tecla="E">e</button>
+                <button class="tecla" data-tecla="R">r</button>
+                <button class="tecla" data-tecla="T">t</button>
+                <button class="tecla" data-tecla="Y">y</button>
+                <button class="tecla" data-tecla="U">u</button>
+                <button class="tecla" data-tecla="I">i</button>
+                <button class="tecla" data-tecla="O">o</button>
+                <button class="tecla" data-tecla="P">p</button>
+            </div>
+            <div class="linha-teclado">
+                <button class="tecla" data-tecla="A">a</button>
+                <button class="tecla" data-tecla="S">s</button>
+                <button class="tecla" data-tecla="D">d</button>
+                <button class="tecla" data-tecla="F">f</button>
+                <button class="tecla" data-tecla="G">g</button>
+                <button class="tecla" data-tecla="H">h</button>
+                <button class="tecla" data-tecla="J">j</button>
+                <button class="tecla" data-tecla="K">k</button>
+                <button class="tecla" data-tecla="L">l</button>
+            </div>
+            <div class="linha-teclado">
+                <button class="tecla especial enviar" data-tecla="ENTER">Enter</button>
+                <button class="tecla" data-tecla="Z">z</button>
+                <button class="tecla" data-tecla="X">x</button>
+                <button class="tecla" data-tecla="C">c</button>
+                <button class="tecla" data-tecla="V">v</button>
+                <button class="tecla" data-tecla="B">b</button>
+                <button class="tecla" data-tecla="N">n</button>
+                <button class="tecla" data-tecla="M">m</button>
+                <button class="tecla especial" data-tecla="APAGAR">⌫</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>Termo · feito por você</footer>
+</div>
+
+<!-- FIM DE RODADA -->
+<div class="modal-fundo" id="modal-fim">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resultado-titulo">
+        <h2 id="resultado-titulo">Você acertou!</h2>
+        <p id="resultado-texto">A palavra era:</p>
+        <div class="palavra-resposta" id="resultado-palavra">TERMO</div>
+        <div class="botoes-linha">
+            <button class="botao" id="btn-jogar-novamente">Jogar de novo</button>
+            <button class="botao botao-secundario" id="btn-menu">Menu</button>
+        </div>
+    </div>
+</div>
+
+<noscript>Ative o JavaScript para jogar.</noscript>
+
+<script src="script.js"></script>
+<script src="temas-extra.js"></script>
+<script src="jogo.js"></script>
+</body>
+</html>
