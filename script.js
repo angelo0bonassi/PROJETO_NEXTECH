@@ -1,114 +1,121 @@
-let modoAtual = null;
-let temaAtual = null;
+/* =====================================================
+   TERMO — Lógica do Jogo
+   ===================================================== */
+
+// ---------- ESTADO GLOBAL ----------
+let modoAtual = 'normal';
+let temaAtual = 'Geral';
 let palavraSecreta = "";
 let tentativas = [];
+let tentativaAtual = "";
 let jogoTerminado = false;
+
+// Cronômetro e estatísticas
 let tempoInicial = null;
+let intervaloTempo = null;
+let segundosDecorridos = 0;
+
+let estatisticas = {
+    vitorias: 0,
+    jogos: 0,
+    sequencia: 0
+};
+
 const LIMITE_TENTATIVAS = 6;
 
-function iniciarJogo(modo, tema) {
-    modoAtual = modo;
-    temaAtual = tema;
-    palavraSecreta = "";
-    tentativas = [];
-    jogoTerminado = false;
-    tempoInicial = null;
-}
-
-
+// ---------- BANCO DE PALAVRAS ORIGINAL ----------
 const palavrasPorTema = {
-    Geral:
-    [
+    Geral: [
         // Palavras do cotidiano
-    "ABRIL", "ACASO", "ACHAR", "ADEUS", "AGORA", "AJUDA", "ALADO", "ALBUM",
-    "ALUNO", "AMADO", "AMIGO", "AMORA", "ANIMO", "ANTES", "APICE", "APOIO",
-    "ARAME", "AREIA", "ARMAS", "ARROZ", "ARTES", "ASTRO", "ATLAS", "ATRAS",
-    "AUDIO", "AVIAO", "BAILE", "BAIXO", "BALAO", "BANCO", "BANHO", "BARCO",
-    "BARRA", "BASES", "BATOM", "BEIJO", "BELAS", "BELOS", "BICHO", "BOLSA",
-    "BOLSO", "BONDE", "BORDA", "BRACO", "BRASA", "BREJO", "BRISA", "BROTO",
-    "BRUTO", "CABRA", "CACAU", "CAIXA", "CALMA", "CALOR", "CAMPO", "CANAL",
-    "CANOA", "CANTO", "CAPAZ", "CARRO", "CARTA", "CASAL", "CASAS", "CEDRO",
-    "CELAS", "CENAS", "CERCA", "CERTO", "CHAVE", "CHEFE", "CHUVA", "CICLO",
-    "CINCO", "CINZA", "CIRCO", "CLARO", "CLIMA", "CLUBE", "COISA", "COLAR",
-    "CONTA", "CORAL", "CORDA", "CORES", "CORPO", "CORTE", "COURO", "CRAVO",
-    "CRIME", "CRISE", "CUBOS", "CULPA", "CURSO", "DANÇA", "DEDOS", "DENTE",
-    "DESCE", "DESDE", "DICAS", "DOBRA", "DOIDO", "DOLAR", "DONOS", "DORSO",
-    "DRAMA", "DUNAS", "DUQUE", "ÉPOCA", "ERROS", "ETAPA", "EVENTO", "EXATO",
+        "ABRIL", "ACASO", "ACHAR", "ADEUS", "AGORA", "AJUDA", "ALADO", "ALBUM",
+        "ALUNO", "AMADO", "AMIGO", "AMORA", "ANIMO", "ANTES", "APICE", "APOIO",
+        "ARAME", "AREIA", "ARMAS", "ARROZ", "ARTES", "ASTRO", "ATLAS", "ATRAS",
+        "AUDIO", "AVIAO", "BAILE", "BAIXO", "BALAO", "BANCO", "BANHO", "BARCO",
+        "BARRA", "BASES", "BATOM", "BEIJO", "BELAS", "BELOS", "BICHO", "BOLSA",
+        "BOLSO", "BONDE", "BORDA", "BRACO", "BRASA", "BREJO", "BRISA", "BROTO",
+        "BRUTO", "CABRA", "CACAU", "CAIXA", "CALMA", "CALOR", "CAMPO", "CANAL",
+        "CANOA", "CANTO", "CAPAZ", "CARRO", "CARTA", "CASAL", "CASAS", "CEDRO",
+        "CELAS", "CENAS", "CERCA", "CERTO", "CHAVE", "CHEFE", "CHUVA", "CICLO",
+        "CINCO", "CINZA", "CIRCO", "CLARO", "CLIMA", "CLUBE", "COISA", "COLAR",
+        "CONTA", "CORAL", "CORDA", "CORES", "CORPO", "CORTE", "COURO", "CRAVO",
+        "CRIME", "CRISE", "CUBOS", "CULPA", "CURSO", "DANÇA", "DEDOS", "DENTE",
+        "DESCE", "DESDE", "DICAS", "DOBRA", "DOIDO", "DOLAR", "DONOS", "DORSO",
+        "DRAMA", "DUNAS", "DUQUE", "ÉPOCA", "ERROS", "ETAPA", "EVENTO", "EXATO",
 
-    // Natureza e clima
-    "ÁRIDO", "ÁVIDO", "BRUMA", "CAMPO", "CÉU", "FAUNA", "FLORA", "FOLHA", 
-    "FONTE", "FORÇA", "FREIO", "FRUTA", "FURTO", "GAROA", "GARRA",
-    "GASTO", "GENTE", "GERAL", "GIRAS", "GLOBO", "GOLPE", "GOSTO", "GRAMA",
-    "GRAVE", "GRUPO", "GUETO", "HONRA", "HOTEL", "HUMOR", "IDEAL", "IDADE",
-    "ÍNDIO", "IRMÃO", "JUNHO", "JULHO", "JUSTO", "LARGO", "LENHA", "LIMPO",
-    "LINHA", "LIVRO", "LOCAL", "LONGE", "LOUCO", "LUCRO", "LUGAR", "LUTAS",
-    "MAGIA", "MAGRO", "MAIOR", "MALHA", "MALTE", "MANGA", "MANTO", "MARCA",
-    "MARCO", "MARÇO", "MASSA", "MATAR", "MEDOS", "MEIAS", "MELÃO", "MENOR",
-    "MENTE", "MESMO", "METAL", "METRO", "MILHO", "MINHA", "MIOLO", "MISTO",
-    "MODAS", "MOEDA", "MORAL", "MORRO", "MORTE", "MOSCA", "MOTEL", "MOTOR",
-    "MUNDO", "NADAR", "NATAL", "NAVIO", "NEGRO", "NETOS", "NINHO", "NÍVEL",
-    "NOBRE", "NOITE", "NORTE", "NOVOS", "NUVEM", "OBRAS", "OLHOS", "ONTEM",
-    "ORDEM", "OUROS", "PACTO", "PADRE", "PAGAR", "PALCO", "PALHA", "PALMA",
-    "PAPEL", "PARTE", "PASSO", "PASTA", "PAUSA", "PEDRA", "PEITO", "PERDA",
-    "PERNA", "PESCA", "PIANO", "PILHA", "PINTO", "PINTA", "PIRÃO", "PISTA",
-    "PLANO", "PLENO", "POBRE", "POEMA", "POETA", "PONTO", "PORTA", "PORTE",
-    "PORTO", "POSTO", "PRAIA", "PRATO", "PRAZO", "PREÇO", "PRESA", "PRETO",
-    "PROVA", "PRIMO", "QUASE", "QUEDA", "QUILO", "QUINA", "QUOTA", "RAIVA",
-    "RAMOS", "RAPAZ", "RASGO", "RAZÃO", "REDES", "REGRA", "REINO", "RESTO",
-    "RISCO", "RITMO", "RIVAL", "ROCHA", "RODAS", "ROSTO", "ROUPA", "RUÍDO",
+        // Natureza e clima
+        "ÁRIDO", "ÁVIDO", "BRUMA", "CAMPO", "CÉU", "FAUNA", "FLORA", "FOLHA", 
+        "FONTE", "FORÇA", "FREIO", "FRUTA", "FURTO", "GAROA", "GARRA",
+        "GASTO", "GENTE", "GERAL", "GIRAS", "GLOBO", "GOLPE", "GOSTO", "GRAMA",
+        "GRAVE", "GRUPO", "GUETO", "HONRA", "HOTEL", "HUMOR", "IDEAL", "IDADE",
+        "ÍNDIO", "IRMÃO", "JUNHO", "JULHO", "JUSTO", "LARGO", "LENHA", "LIMPO",
+        "LINHA", "LIVRO", "LOCAL", "LONGE", "LOUCO", "LUCRO", "LUGAR", "LUTAS",
+        "MAGIA", "MAGRO", "MAIOR", "MALHA", "MALTE", "MANGA", "MANTO", "MARCA",
+        "MARCO", "MARÇO", "MASSA", "MATAR", "MEDOS", "MEIAS", "MELÃO", "MENOR",
+        "MENTE", "MESMO", "METAL", "METRO", "MILHO", "MINHA", "MIOLO", "MISTO",
+        "MODAS", "MOEDA", "MORAL", "MORRO", "MORTE", "MOSCA", "MOTEL", "MOTOR",
+        "MUNDO", "NADAR", "NATAL", "NAVIO", "NEGRO", "NETOS", "NINHO", "NÍVEL",
+        "NOBRE", "NOITE", "NORTE", "NOVOS", "NUVEM", "OBRAS", "OLHOS", "ONTEM",
+        "ORDEM", "OUROS", "PACTO", "PADRE", "PAGAR", "PALCO", "PALHA", "PALMA",
+        "PAPEL", "PARTE", "PASSO", "PASTA", "PAUSA", "PEDRA", "PEITO", "PERDA",
+        "PERNA", "PESCA", "PIANO", "PILHA", "PINTO", "PINTA", "PIRÃO", "PISTA",
+        "PLANO", "PLENO", "POBRE", "POEMA", "POETA", "PONTO", "PORTA", "PORTE",
+        "PORTO", "POSTO", "PRAIA", "PRATO", "PRAZO", "PREÇO", "PRESA", "PRETO",
+        "PROVA", "PRIMO", "QUASE", "QUEDA", "QUILO", "QUINA", "QUOTA", "RAIVA",
+        "RAMOS", "RAPAZ", "RASGO", "RAZÃO", "REDES", "REGRA", "REINO", "RESTO",
+        "RISCO", "RITMO", "RIVAL", "ROCHA", "RODAS", "ROSTO", "ROUPA", "RUÍDO",
 
-    // Sentimentos, ideias e características
-    "SABOR", "SACOS", "SAÍDA", "SALÃO", "SALTO", "SAMBA", "SANTO", "SAQUE",
-    "SARAU", "SAÚDE", "SEÇÃO", "SELVA", "SENHA", "SENSO", "SÉRIE", "SERVO",
-    "SEXTA", "SIGLA", "SINAL", "SÍTIO", "SOBRA", "SONHO", "SORTE", "SUAVE",
-    "SURTO", "TALCO", "TAMPA", "TARDE", "TAXAS", "TEMPO", "TENDA", "TÊNIS",
-    "TERÇO", "TERMO", "TERRA", "TESTE", "TEXTO", "TIGRE", "TIMÃO", "TINTA",
-    "TIPOS", "TOCHA", "TODOS", "TOQUE", "TORRE", "TRAMA", "TRATO", "TRECO",
-    "TREVO", "TRIGO", "TRONO", "TROPA", "TROTE", "TUMOR", "ÚNICO", "URINA",
-    "URUBU", "USINA", "VAGAS", "VALOR", "VAPOR", "VASTO", "VELHO", "VENDA",
-    "VENTO", "VERÃO", "VERBO", "VERDE", "VERSO", "VESTE", "VÍCIO", "VIDRO",
-    "VIGOR", "VÍRUS", "VISÃO", "VISTA", "VITAL", "VOTOS", "ZEBRA", "ZONAS",
+        // Sentimentos, ideias e características
+        "SABOR", "SACOS", "SAÍDA", "SALÃO", "SALTO", "SAMBA", "SANTO", "SAQUE",
+        "SARAU", "SAÚDE", "SEÇÃO", "SELVA", "SENHA", "SENSO", "SÉRIE", "SERVO",
+        "SEXTA", "SIGLA", "SINAL", "SÍTIO", "SOBRA", "SONHO", "SORTE", "SUAVE",
+        "SURTO", "TALCO", "TAMPA", "TARDE", "TAXAS", "TEMPO", "TENDA", "TÊNIS",
+        "TERÇO", "TERMO", "TERRA", "TESTE", "TEXTO", "TIGRE", "TIMÃO", "TINTA",
+        "TIPOS", "TOCHA", "TODOS", "TOQUE", "TORRE", "TRAMA", "TRATO", "TRECO",
+        "TREVO", "TRIGO", "TRONO", "TROPA", "TROTE", "TUMOR", "ÚNICO", "URINA",
+        "URUBU", "USINA", "VAGAS", "VALOR", "VAPOR", "VASTO", "VELHO", "VENDA",
+        "VENTO", "VERÃO", "VERBO", "VERDE", "VERSO", "VESTE", "VÍCIO", "VIDRO",
+        "VIGOR", "VÍRUS", "VISÃO", "VISTA", "VITAL", "VOTOS", "ZEBRA", "ZONAS",
 
-    // Corpo humano e saúde
-    "BARRA", "BEBÊS", "BOCHE", "COSTA", "DEDOS", "DENTE", "FÊMUR",
-    "FIBRA", "GÊNIO", "LÁBIO",
-    "NARIZ", "OLHOS", "OSSOS", "PELOS", "PEITO", "PULSO",
-    "SANGUE", "TENDÃO", "TORAX", "VEIAS", "VÍRUS",
+        // Corpo humano e saúde
+        "BARRA", "BEBÊS", "BOCHE", "COSTA", "DEDOS", "DENTE", "FÊMUR",
+        "FIBRA", "GÊNIO", "LÁBIO",
+        "NARIZ", "OLHOS", "OSSOS", "PELOS", "PEITO", "PULSO",
+        "SANGUE", "TENDÃO", "TORAX", "VEIAS", "VÍRUS",
 
-    // Lugares e construções
-    "BARRA", "BLOCO", "BOSSA", "CASAS",
-    "CIRCO", "CIDADE", "HOTEL", "IGREJA", "LARGO", "LOJAS", "MURAL", "OBRAS",
-    "PARTE", "PÁTIO", "PRAÇA", "QUARTO", "SALAS", "SÍTIO", "TORRE", "TRILHA",
-    "VILAS", "ZONAS",
+        // Lugares e construções
+        "BARRA", "BLOCO", "BOSSA", "CASAS",
+        "CIRCO", "CIDADE", "HOTEL", "IGREJA", "LARGO", "LOJAS", "MURAL", "OBRAS",
+        "PARTE", "PÁTIO", "PRAÇA", "QUARTO", "SALAS", "SÍTIO", "TORRE", "TRILHA",
+        "VILAS", "ZONAS",
 
-    // Objetos e materiais
-    "ANEL", "BOLSA", "CABO", "CABOS", "CAIXA", "CANAL", "CANOA",
-    "CINTO", "COFRE", "COLAR", "COPO", "CORDA", "COURO", "FACA", "FAROL",
-    "FICHA", "FIO", "FITA", "FOLHA", "FONTE", "FORNO", "GARFO", "GAVETA",
-    "LÁPIS", "LATA", "LENTE", "LIVRO", "MANTA", "MÁQUINA", "MESA", "MOLDE",
-    "MURAL", "PAPEL", "PENTE", "PILHA", "PINO", "PLACA", "PRATO", "QUADRO",
-    "RÁDIO", "REGUA", "RODAS", "SACO", "SERRA", "TÁBUA", "TELHA", "TINTA",
-    "TORNE", "VASOS", "VIDRO",
+        // Objetos e materiais
+        "ANEL", "BOLSA", "CABO", "CABOS", "CAIXA", "CANAL", "CANOA",
+        "CINTO", "COFRE", "COLAR", "COPO", "CORDA", "COURO", "FACA", "FAROL",
+        "FICHA", "FIO", "FITA", "FOLHA", "FONTE", "FORNO", "GARFO", "GAVETA",
+        "LÁPIS", "LATA", "LENTE", "LIVRO", "MANTA", "MÁQUINA", "MESA", "MOLDE",
+        "MURAL", "PAPEL", "PENTE", "PILHA", "PINO", "PLACA", "PRATO", "QUADRO",
+        "RÁDIO", "REGUA", "RODAS", "SACO", "SERRA", "TÁBUA", "TELHA", "TINTA",
+        "TORNE", "VASOS", "VIDRO",
 
-    // Palavras variadas
-    "ABRIR", "ACENO", "ACESA", "ACESO", "AFETO", "AGUAS", "ALMAS", "ALTOS",
-    "AMPLA", "AMPLO", "ANDAR", "ANEXO", "APEAR", "ARENA", "AROMA", "ATIVO",
-    "ATRIZ", "AUTOR", "AVISO", "BASTA", "BATER", "BEIRA", "BOLHA", "BRAVA",
-    "BRAVO", "BREVE", "BUSCA", "CARGA", "CARNE", "CASAR", "CAUSA", "CEDER",
-    "CERTO", "CHATO", "CHEIO", "CINTO", "CIVIL", "COMUM", "CORAR", "CRIAR",
-    "DADOS", "DANÇA", "DENSO", "DEVER", "DIZER", "DUELO", "ELITE",
-    "ENORME", "ENVIO", "ESSAS", "ESSES", "ESTAR", "EXAME", "FALHA", "FALSO",
-    "FAVOR", "FEIRA", "FELIZ", "FERRO", "FESTA", "FILHO", "FINAL", "FIRME",
-    "FLUXO", "FOCAR", "FUGIR", "FUNDO", "FURAR", "GANHO", "GATOS", "GELAR",
-    "GENRO", "GIRAR", "GRAÇA", "GRITO", "HASTE", "HERÓI", "HOMEM", "HONRA",
-    "HORAS", "JOGAR", "JOVEM", "JUÍZO", "LAVAR", "LEGAL", "LEITE", "LETRA",
-    "LIMÃO", "LIMPO", "LIVRE", "LUTAR", "MANSO", "MARÉ", "MÉDIO",
-    "MEXER", "MORAR", "MUDAR", "NADAR", "NENÉM", "NÍVEL", "NOMES", "NOVAS",
-    "NOVOS", "ODIAR", "OUVIR", "PAGAR", "PARAR", "PECAR", "PEGAR", "PESAR",
-    "PODER", "POLVO", "PULAR", "QUERO", "RAPTO", "REZAR", "SABER", "SACAR",
-    "SALVA", "SEGUI", "SENHA", "SERÃO", "SINAL", "SOLTO", "SUTIL", "TEMER",
-    "TERMO", "TIRAR", "TOMAR", "USADO", "USUAL", "VAGAR", "VALSA", "VIRAR",
-    "VIVER", "VOTAR", "ZELAR"
+        // Palavras variadas
+        "ABRIR", "ACENO", "ACESA", "ACESO", "AFETO", "AGUAS", "ALMAS", "ALTOS",
+        "AMPLA", "AMPLO", "ANDAR", "ANEXO", "APEAR", "ARENA", "AROMA", "ATIVO",
+        "ATRIZ", "AUTOR", "AVISO", "BASTA", "BATER", "BEIRA", "BOLHA", "BRAVA",
+        "BRAVO", "BREVE", "BUSCA", "CARGA", "CARNE", "CASAR", "CAUSA", "CEDER",
+        "CERTO", "CHATO", "CHEIO", "CINTO", "CIVIL", "COMUM", "CORAR", "CRIAR",
+        "DADOS", "DANÇA", "DENSO", "DEVER", "DIZER", "DUELO", "ELITE",
+        "ENORME", "ENVIO", "ESSAS", "ESSES", "ESTAR", "EXAME", "FALHA", "FALSO",
+        "FAVOR", "FEIRA", "FELIZ", "FERRO", "FESTA", "FILHO", "FINAL", "FIRME",
+        "FLUXO", "FOCAR", "FUGIR", "FUNDO", "FURAR", "GANHO", "GATOS", "GELAR",
+        "GENRO", "GIRAR", "GRAÇA", "GRITO", "HASTE", "HERÓI", "HOMEM", "HONRA",
+        "HORAS", "JOGAR", "JOVEM", "JUÍZO", "LAVAR", "LEGAL", "LEITE", "LETRA",
+        "LIMÃO", "LIMPO", "LIVRE", "LUTAR", "MANSO", "MARÉ", "MÉDIO",
+        "MEXER", "MORAR", "MUDAR", "NADAR", "NENÉM", "NÍVEL", "NOMES", "NOVAS",
+        "NOVOS", "ODIAR", "OUVIR", "PAGAR", "PARAR", "PECAR", "PEGAR", "PESAR",
+        "PODER", "POLVO", "PULAR", "QUERO", "RAPTO", "REZAR", "SABER", "SACAR",
+        "SALVA", "SEGUI", "SENHA", "SERÃO", "SINAL", "SOLTO", "SUTIL", "TEMER",
+        "TERMO", "TIRAR", "TOMAR", "USADO", "USUAL", "VAGAR", "VALSA", "VIRAR",
+        "VIVER", "VOTAR", "ZELAR"
     ],
     Verbos: [
         "ACHAR", "ADIAR", "AFIAR", "ALIAR", "ANDAR", "ARCAR", "ARMAR", "ASSAR", "ATUAR", "AVIAR",
@@ -129,7 +136,6 @@ const palavrasPorTema = {
         "VIVER", "ZERAR", "ZELAR", "CEDER", "COMER", "COSER", "COZER", "DEVER", "DIZER", "LATIR",
         "MEDIR", "RUGIR"
     ],
-    
     Alimentos: [
         // Frutas
         "ABACATE", "ABACAXI", "ACEROLA", "AÇAÍ", "AMEIXA", "AMORA", "BANANA", "CAJU",
@@ -540,49 +546,50 @@ const palavrasPorTema = {
         "INICIAR", "INOVAR", "INSISTIR", "INSTALAR", "INTEGRAR", "INTERAGIR",
         "INTERPRETAR", "INTERROMPER", "INTERVIR", "INTRODUZIR", "INVENTAR", "INVESTIGAR",
         "INVESTIR", "IRRITAR", "ISOLAR", "JANTAR", "JOGAR", "JULGAR",
-        "JUNTAR", "JURAR", "LAMENTAR", "LANÇAR", "LARGAR", "LAVAR",
-        "LEMBRAR", "LER", "LEVANTAR", "LEVAR", "LIBERAR", "LIDERAR",
-        "LIGAR", "LIMPAR", "LIMITAR", "LIVRAR", "LOCALIZAR", "LUTAR",
-        "MACHUCAR", "MALHAR", "MANDAR", "MANEJAR", "MANTER", "MARCAR",
-        "MARCHAR", "MASCAR", "MATAR", "MEDIR", "MELHORAR", "MEMORIZAR",
-        "MENTIR", "MERECER", "MERGULHAR", "MEXER", "MISTURAR", "MODIFICAR",
-        "MORDER", "MORAR", "MORRER", "MOSTRAR", "MOTIVAR", "MOVER",
-        "MUDAR", "MULTIPLICAR", "NADAR", "NAMORAR", "NARRAR", "NAScer",
-        "NAVEGAR", "NEGAR", "NEGOCIAR", "NOTAR", "NOTIFICAR", "OBEDECER",
-        "OBSERVAR", "OBTER", "OCORRER", "OFERECER", "OLHAR", "OPERAR",
-        "OPINAR", "ORGANIZAR", "ORIENTAR", "ORIGINAR", "OUVIR", "PAGAR",
-        "PARAR", "PARECER", "PARTICIPAR", "PARTILHAR", "PARTIR", "PASSAR",
-        "PASSEAR", "PATRULHAR", "PAVIMENTAR", "PECAR", "PEDIR", "PEGAR",
-        "PENSAR", "PERCEBER", "PERDER", "PERDOAR", "PERGUNTAR", "PERMITIR",
-        "PERSISTIR", "PERSONALIZAR", "PESQUISAR", "PINTAR", "PISAR", "PLANEJAR",
-        "PLANTAR", "PODER", "POLIR", "PONDERAR", "PONTUAR", "POR",
-        "PORTAR", "POSICIONAR", "POSSUIR", "PRATICAR", "PRENDER", "PREPARAR",
-        "PRESENTEAR", "PRESERVAR", "PRESUMIR", "PREVENIR", "PREVER", "PROCURAR",
-        "PRODUZIR", "PROGREDIR", "PROMETER", "PROMOVER", "PRONUNCIAR", "PROPOR",
-        "PROTEGER", "PROTESTAR", "PROVAR", "PUBLICAR", "PULAR", "PUNIR",
-        "QUEBRAR", "QUEIMAR", "QUERER", "QUESTIONAR", "RABISCAR", "RACIOCINAR",
-        "RACHAR", "RADIAR", "RALHAR", "RASCUNHAR", "RASGAR", "RASPAr",
-        "REAGIR", "REALIZAR", "RECEBER", "RECLAMAR", "RECOLHER", "RECOMPENSAR",
-        "RECONHECER", "RECORDAR", "RECUPERAR", "REDIGIR", "REDUZIR", "REFLETIR",
-        "REFORMAR", "REFORÇAR", "REGISTRAR", "REGULAR", "REINAR", "REJEITAR",
-        "RELAXAR", "RELER", "RENDER", "RENOVAR", "REPARAR", "REPETIR",
-        "REPRESENTAR", "RESOLVER", "RESPIRAR", "RESPONDER", "RESTAURAR", "RESTAR",
-        "RESTRINGIR", "RESULTAR", "RETIRAR", "REUNIR", "REVELAR", "REVISAR",
-        "REVIVER", "REZAR", "RIR", "RODAR", "ROMPER", "RONCAR",
-        "SABER", "SACAR", "SACUDIR", "SAIR", "SALVAR", "SANGRAR",
-        "SATISFAZER", "SECAR", "SEGURAR", "SEGUIR", "SELECIONAR", "SENTAR",
-        "SENTIR", "SEPARAR", "SERVIR", "SIGNIFICAR", "SIMPLIFICAR", "SINALIZAR",
-        "SITUAR", "SOBRAR", "SOFRER", "SOLTAR", "SONHAR", "SORRIR",
-        "SUSPENDER", "SUSTENTAR", "TENTAR", "TER", "TERMINAR", "TIRAR",
-        "TOCAR", "TOMAR", "TORCER", "TRABALHAR", "TRADUZIR", "TRAFEGAR",
-        "TREINAR", "TREMER", "TRATAR", "TRAZER", "TROCAR", "TROPEÇAR",
-        "UNIR", "UTILIZAR", "VACINAR", "VAGAR", "VALORIZAR", "VARRER",
-        "VENCER", "VENDER", "VER", "VERIFICAR", "VESTIR", "VIAJAR",
-        "VIGIAR", "VINCULAR", "VISITAR", "VIVER", "VOAR", "VOLTAR",
-        "VOTAR", "ZELAR", "ZOMBAR"
+        "JUNTAR", "LAMENTAR", "LANÇAR", "LARGAR", "LAVAR", "LEMBRAR",
+        "LER", "LEVANTAR", "LEVAR", "LIBERAR", "LIDERAR", "LIGAR",
+        "LIMPAR", "LIMITAR", "LIVRAR", "LOCALIZAR", "LUTAR", "MACHUCAR",
+        "MALHAR", "MANDAR", "MANEJAR", "MANTER", "MARCAR", "MARCHAR",
+        "MASCAR", "MATAR", "MEDIR", "MELHORAR", "MEMORIZAR", "MENTIR",
+        "MERECER", "MERGULHAR", "MEXER", "MISTURAR", "MODIFICAR", "MORDER",
+        "MORAR", "MORRER", "MOSTRAR", "MOTIVAR", "MOVER", "MUDAR",
+        "MULTIPLICAR", "NADAR", "NAMORAR", "NARRAR", "NAScer", "NAVEGAR",
+        "NEGAR", "NEGOCIAR", "NOTAR", "NOTIFICAR", "OBEDECER", "OBSERVAR",
+        "OBTER", "OCORRER", "OFERECER", "OLHAR", "OPERAR", "OPINAR",
+        "ORGANIZAR", "ORIENTAR", "ORIGINAR", "OUVIR", "PAGAR", "PARAR",
+        "PARECER", "PARTICIPAR", "PARTILHAR", "PARTIR", "PASSAR", "PASSEAR",
+        "PATRULHAR", "PAVIMENTAR", "PECAR", "PEDIR", "PEGAR", "PENSAR",
+        "PERCEBER", "PERDER", "PERDOAR", "PERGUNTAR", "PERMITIR", "PERSISTIR",
+        "PERSONALIZAR", "PESQUISAR", "PINTAR", "PISAR", "PLANEJAR", "PLANTAR",
+        "PODER", "POLIR", "PONDERAR", "PONTUAR", "POR", "PORTAR",
+        "POSICIONAR", "POSSUIR", "PRATICAR", "PRENDER", "PREPARAR", "PRESENTEAR",
+        "PRESERVAR", "PRESUMIR", "PREVENIR", "PREVER", "PROCURAR", "PRODUZIR",
+        "PROGREDIR", "PROMETER", "PROMOVER", "PRONUNCIAR", "PROPOR", "PROTEGER",
+        "PROTESTAR", "PROVAR", "PUBLICAR", "PULAR", "PUNIR", "QUEBRAR",
+        "QUEIMAR", "QUERER", "QUESTIONAR", "RABISCAR", "RACIOCINAR", "RACHAR",
+        "RADIAR", "RALHAR", "RASCUNHAR", "RASGAR", "RASPAr", "REAGIR",
+        "REALIZAR", "RECEBER", "RECLAMAR", "RECOLHER", "RECOMPENSAR", "RECONHECER",
+        "RECORDAR", "RECUPERAR", "REDIGIR", "REDUZIR", "REFLETIR", "REFORMAR",
+        "REFORÇAR", "REGISTRAR", "REGULAR", "REINAR", "REJEITAR", "RELAXAR",
+        "RELER", "RENDER", "RENOVAR", "REPARAR", "REPETIR", "REPRESENTAR",
+        "RESOLVER", "RESPIRAR", "RESPONDER", "RESTAURAR", "RESTAR", "RESTRINGIR",
+        "RESULTAR", "RETIRAR", "REUNIR", "REVELAR", "REVISAR", "REVIVER",
+        "REZAR", "RIR", "RODAR", "ROMPER", "RONCAR", "SABER",
+        "SACAR", "SACUDIR", "SAIR", "SALVAR", "SANGRAR", "SATISFAZER",
+        "SECAR", "SEGURAR", "SEGUIR", "SELECIONAR", "SENTAR", "SENTIR",
+        "SEPARAR", "SERVIR", "SIGNIFICAR", "SIMPLIFICAR", "SINALIZAR", "SITUAR",
+        "SOBRAR", "SOFRER", "SOLTAR", "SONHAR", "SORRIR", "SUSPENDER",
+        "SUSTENTAR", "TENTAR", "TER", "TERMINAR", "TIRAR", "TOCAR",
+        "TOMAR", "TORCER", "TRABALHAR", "TRADUZIR", "TRAFEGAR", "TREINAR",
+        "TREMER", "TRATAR", "TRAZER", "TROCAR", "TROPEÇAR", "UNIR",
+        "UTILIZAR", "VACINAR", "VAGAR", "VALORIZAR", "VARRER", "VENCER",
+        "VENDER", "VER", "VERIFICAR", "VESTIR", "VIAJAR", "VIGIAR",
+        "VINCULAR", "VISITAR", "VIVER", "VOAR", "VOLTAR", "VOTAR",
+        "ZELAR", "ZOMBAR"
     ]
-}; 
+};
 
+// ---------- FUNÇÃO ORIGINAL ----------
 function sortearPalavra(tema) {
     const palavras = palavrasPorTema[tema];
     const indiceAleatorio = Math.floor(Math.random() * palavras.length);
@@ -590,4 +597,454 @@ function sortearPalavra(tema) {
     return palavras[indiceAleatorio];
 }
 
-console.log(sortearPalavra("Geral"));
+// ---------- ELEMENTOS DO DOM ----------
+const telas = {
+    menu: document.getElementById('tela-menu'),
+    temas: document.getElementById('tela-temas'),
+    jogo: document.getElementById('tela-jogo')
+};
+
+const btns = {
+    normal: document.getElementById('btn-normal'),
+    infinito: document.getElementById('btn-infinito'),
+    voltarTemas: document.getElementById('btn-voltar-temas'),
+    voltarMenu: document.getElementById('btn-voltar'),
+    ajuda: document.getElementById('btn-ajuda'),
+    estatisticas: document.getElementById('btn-estatisticas'),
+    jogarNovamente: document.getElementById('btn-jogar-novamente'),
+    btnMenuModal: document.getElementById('btn-menu')
+};
+
+const elModal = document.getElementById('modal-fim');
+const elAvisos = document.getElementById('avisos');
+const elTabuleiro = document.getElementById('tabuleiro');
+const elTeclado = document.getElementById('teclado');
+
+// ---------- INICIALIZAÇÃO ----------
+document.addEventListener('DOMContentLoaded', () => {
+    carregarEstatisticas();
+    configurarEventos();
+});
+
+function configurarEventos() {
+    btns.normal.addEventListener('click', () => abrirTelaTemas('normal'));
+    btns.infinito.addEventListener('click', () => abrirTelaTemas('infinito'));
+
+    btns.voltarTemas.addEventListener('click', () => trocarTela('menu'));
+    btns.voltarMenu.addEventListener('click', () => trocarTela('menu'));
+
+    btns.ajuda.addEventListener('click', () => {
+        mostrarAviso("Adivinhe a palavra secreta em 6 tentativas!");
+    });
+    btns.estatisticas.addEventListener('click', mostrarEstatisticasModal);
+
+    btns.jogarNovamente.addEventListener('click', () => {
+        fecharModal();
+        iniciarJogo(modoAtual, temaAtual);
+    });
+
+    btns.btnMenuModal.addEventListener('click', () => {
+        fecharModal();
+        trocarTela('menu');
+    });
+
+    elTeclado.addEventListener('click', (e) => {
+        const btn = e.target.closest('.tecla');
+        if (!btn) return;
+        const tecla = btn.dataset.tecla;
+        tratarEntrada(tecla);
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (!telas.jogo.classList.contains('ativa') || jogoTerminado) return;
+
+        if (e.key === 'Enter') {
+            tratarEntrada('ENTER');
+        } else if (e.key === 'Backspace') {
+            tratarEntrada('APAGAR');
+        } else {
+            const letra = e.key.toUpperCase();
+            if (/^[A-ZÃÁÂÀÉÊÍÓÔÕÚÇ]$/.test(letra)) {
+                tratarEntrada(letra);
+            }
+        }
+    });
+}
+
+// ---------- NAVEGAÇÃO ENTRE TELAS ----------
+function trocarTela(nomeTela) {
+    Object.values(telas).forEach(t => t.classList.remove('ativa'));
+    telas[nomeTela].classList.add('ativa');
+
+    if (nomeTela !== 'jogo') {
+        pararCronometro();
+    }
+}
+
+function abrirTelaTemas(modo) {
+    modoAtual = modo;
+    document.getElementById('modo-temas').textContent = modo === 'normal' ? 'Normal' : 'Infinito';
+    document.getElementById('modo-temas').className = `etiqueta-modo modo-${modo}`;
+    document.getElementById('texto-temas').textContent = modo === 'normal'
+        ? "Escolha um tema para jogar palavras de 5 letras."
+        : "No modo infinito o tamanho da palavra muda a cada rodada!";
+
+    renderizarListaTemas();
+    trocarTela('temas');
+}
+
+function renderizarListaTemas() {
+    const container = document.getElementById('lista-temas');
+    container.innerHTML = '';
+
+    const emojis = {
+        Geral: '🌟',
+        Verbos: '⚡',
+        Alimentos: '🍎',
+        Objetos: '📦',
+        Animais: '🐾',
+        Verbos2: '🔥'
+    };
+
+    const lista = Object.keys(palavrasPorTema);
+
+    lista.forEach(tema => {
+        const btn = document.createElement('button');
+        btn.className = 'tema tema-botao';
+        btn.innerHTML = `
+            <span class="emoji">${emojis[tema] || '🎯'}</span>
+            <span>${tema}</span>
+        `;
+        btn.addEventListener('click', () => {
+            iniciarJogo(modoAtual, tema);
+            trocarTela('jogo');
+        });
+        container.appendChild(btn);
+    });
+}
+
+// ---------- LÓGICA DE JOGO ----------
+function iniciarJogo(modo, tema) {
+    modoAtual = modo;
+    temaAtual = tema;
+    tentativas = [];
+    tentativaAtual = "";
+    jogoTerminado = false;
+
+    // Sorteia a palavra do tema escolhido
+    let palavraCrua = sortearPalavra(tema);
+
+    // No modo normal, busca uma palavra de 5 letras se a sorteada não for de 5
+    if (modo === 'normal') {
+        const listaNormalizada = palavrasPorTema[tema].filter(p => removerAcentos(p.trim()).length === 5);
+        if (listaNormalizada.length > 0) {
+            palavraCrua = listaNormalizada[Math.floor(Math.random() * listaNormalizada.length)];
+        }
+    }
+
+    palavraSecreta = removerAcentos(palavraCrua.trim().toUpperCase());
+
+    document.getElementById('tema-atual').textContent = tema;
+    document.getElementById('modo-atual').textContent = modo === 'normal' ? 'Normal' : 'Infinito';
+    document.getElementById('tela-jogo').className = `tela ativa jogo-${modo}`;
+    
+    document.getElementById('contador-tentativas').textContent = `0/${LIMITE_TENTATIVAS}`;
+    document.getElementById('vitorias').textContent = estatisticas.vitorias;
+
+    const dicaTamanho = document.getElementById('dica-tamanho');
+    if (modo === 'infinito') {
+        dicaTamanho.textContent = "Tamanho da palavra: Oculto (Descubra digitando!)";
+        elTabuleiro.classList.add('oculto');
+    } else {
+        dicaTamanho.textContent = `Palavra de ${palavraSecreta.length} letras`;
+        elTabuleiro.classList.remove('oculto');
+    }
+
+    montarTabuleiro();
+    resetarTeclado();
+    iniciarCronometro();
+}
+
+function removerAcentos(texto) {
+    return texto.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+}
+
+// ---------- TABULEIRO ----------
+function montarTabuleiro() {
+    elTabuleiro.innerHTML = '';
+    const numColunas = palavraSecreta.length;
+    elTabuleiro.style.setProperty('--colunas', numColunas);
+
+    for (let i = 0; i < LIMITE_TENTATIVAS; i++) {
+        const linha = document.createElement('div');
+        linha.className = 'linha';
+
+        for (let j = 0; j < numColunas; j++) {
+            const letra = document.createElement('div');
+            letra.className = 'letra';
+            linha.appendChild(letra);
+        }
+        elTabuleiro.appendChild(linha);
+    }
+    atualizarLinhaAtiva();
+}
+
+function atualizarLinhaAtiva() {
+    if (jogoTerminado) return;
+    
+    const linhaIndex = tentativas.length;
+    if (linhaIndex >= LIMITE_TENTATIVAS) return;
+
+    const linhaAtual = elTabuleiro.children[linhaIndex];
+    const letras = linhaAtual.children;
+    const numColunas = palavraSecreta.length;
+
+    for (let i = 0; i < numColunas; i++) {
+        const char = tentativaAtual[i] || '';
+        letras[i].textContent = char;
+
+        letras[i].className = 'letra';
+        if (char) {
+            letras[i].classList.add('preenchida');
+        }
+        if (i === tentativaAtual.length && tentativaAtual.length < numColunas) {
+            letras[i].classList.add('ativa');
+        }
+    }
+}
+
+// ---------- TECLAS ----------
+function tratarEntrada(tecla) {
+    if (jogoTerminado) return;
+
+    const numColunas = palavraSecreta.length;
+
+    if (tecla === 'APAGAR') {
+        if (tentativaAtual.length > 0) {
+            tentativaAtual = tentativaAtual.slice(0, -1);
+            atualizarLinhaAtiva();
+        }
+    } else if (tecla === 'ENTER') {
+        if (tentativaAtual.length < numColunas) {
+            tremerLinha();
+            mostrarAviso(`A palavra precisa ter ${numColunas} letras!`);
+            return;
+        }
+        submeterTentativa();
+    } else {
+        if (tentativaAtual.length < numColunas) {
+            tentativaAtual += tecla;
+            atualizarLinhaAtiva();
+        }
+    }
+}
+
+function tremerLinha() {
+    const linhaIndex = tentativas.length;
+    const linha = elTabuleiro.children[linhaIndex];
+    linha.classList.add('tremer');
+    setTimeout(() => linha.classList.remove('tremer'), 400);
+}
+
+function submeterTentativa() {
+    const pal = tentativaAtual;
+    tentativas.push(pal);
+
+    const linhaIndex = tentativas.length - 1;
+    const linha = elTabuleiro.children[linhaIndex];
+    const letrasEl = linha.children;
+
+    document.getElementById('contador-tentativas').textContent = `${tentativas.length}/${LIMITE_TENTATIVAS}`;
+
+    const segredoArray = palavraSecreta.split('');
+    const resultado = new Array(palavraSecreta.length).fill('errada');
+
+    for (let i = 0; i < palavraSecreta.length; i++) {
+        if (pal[i] === segredoArray[i]) {
+            resultado[i] = 'correta';
+            segredoArray[i] = null;
+        }
+    }
+
+    for (let i = 0; i < palavraSecreta.length; i++) {
+        if (resultado[i] !== 'correta') {
+            const pos = segredoArray.indexOf(pal[i]);
+            if (pos !== -1) {
+                resultado[i] = 'existe';
+                segredoArray[pos] = null;
+            }
+        }
+    }
+
+    for (let i = 0; i < palavraSecreta.length; i++) {
+        setTimeout(() => {
+            letrasEl[i].classList.add('revelando', resultado[i]);
+            atualizarTeclado(pal[i], resultado[i]);
+        }, i * 120);
+    }
+
+    setTimeout(() => {
+        if (pal === palavraSecreta) {
+            finalizarJogo(true);
+        } else if (tentativas.length >= LIMITE_TENTATIVAS) {
+            finalizarJogo(false);
+        } else {
+            tentativaAtual = "";
+            atualizarLinhaAtiva();
+        }
+    }, palavraSecreta.length * 120 + 200);
+}
+
+function atualizarTeclado(letra, estado) {
+    const btnTecla = elTeclado.querySelector(`[data-tecla="${letra}"]`);
+    if (!btnTecla) return;
+
+    if (estado === 'correta') {
+        btnTecla.className = 'tecla correta';
+    } else if (estado === 'existe' && !btnTecla.classList.contains('correta')) {
+        btnTecla.className = 'tecla existe';
+    } else if (estado === 'errada' && !btnTecla.classList.contains('correta') && !btnTecla.classList.contains('existe')) {
+        btnTecla.className = 'tecla errada';
+    }
+}
+
+function resetarTeclado() {
+    const teclas = elTeclado.querySelectorAll('.tecla');
+    teclas.forEach(t => {
+        if (t.classList.contains('enviar')) {
+            t.className = 'tecla especial enviar';
+        } else if (t.classList.contains('especial')) {
+            t.className = 'tecla especial';
+        } else {
+            t.className = 'tecla';
+        }
+    });
+}
+
+// ---------- CRONÔMETRO ----------
+function iniciarCronometro() {
+    pararCronometro();
+    segundosDecorridos = 0;
+    document.getElementById('tempo').textContent = "00:00";
+
+    intervaloTempo = setInterval(() => {
+        segundosDecorridos++;
+        const mins = String(Math.floor(segundosDecorridos / 60)).padStart(2, '0');
+        const segs = String(segundosDecorridos % 60).padStart(2, '0');
+        document.getElementById('tempo').textContent = `${mins}:${segs}`;
+    }, 1000);
+}
+
+function pararCronometro() {
+    if (intervaloTempo) clearInterval(intervaloTempo);
+}
+
+// ---------- ESTATÍSTICAS E MODAL ----------
+function finalizarJogo(vitoria) {
+    jogoTerminado = true;
+    pararCronometro();
+
+    estatisticas.jogos++;
+    if (vitoria) {
+        estatisticas.vitorias++;
+        estatisticas.sequencia++;
+        
+        const linhaIndex = tentativas.length - 1;
+        elTabuleiro.children[linhaIndex].classList.add('vitoria');
+    } else {
+        estatisticas.sequencia = 0;
+    }
+
+    salvarEstatisticas();
+    document.getElementById('vitorias').textContent = estatisticas.vitorias;
+
+    setTimeout(() => {
+        abrirModalResultado(vitoria);
+    }, 600);
+}
+
+function abrirModalResultado(vitoria) {
+    const elTitulo = document.getElementById('resultado-titulo');
+    const elTexto = document.getElementById('resultado-texto');
+    const elPalavra = document.getElementById('resultado-palavra');
+
+    if (vitoria) {
+        elTitulo.textContent = "Você acertou! 🎉";
+        elTexto.textContent = "Parabéns, a palavra era:";
+    } else {
+        elTitulo.textContent = "Que pena! 😢";
+        elTexto.textContent = "A palavra correta era:";
+    }
+
+    elPalavra.textContent = palavraSecreta;
+    elModal.classList.add('aberto');
+}
+
+function fecharModal() {
+    elModal.classList.remove('aberto');
+}
+
+function carregarEstatisticas() {
+    const dados = localStorage.getItem('termo_estatisticas');
+    if (dados) {
+        try {
+            estatisticas = JSON.parse(dados);
+        } catch (e) {
+            console.error(e);
+        }
+    }
+}
+
+function salvarEstatisticas() {
+    localStorage.setItem('termo_estatisticas', JSON.stringify(estatisticas));
+}
+
+function mostrarEstatisticasModal() {
+    const percentual = estatisticas.jogos > 0 
+        ? Math.round((estatisticas.vitorias / estatisticas.jogos) * 100) 
+        : 0;
+
+    const elTitulo = document.getElementById('resultado-titulo');
+    const elTexto = document.getElementById('resultado-texto');
+    const elPalavra = document.getElementById('resultado-palavra');
+
+    elTitulo.textContent = "Sua Estatísticas";
+    elTexto.textContent = "";
+    elPalavra.style.display = 'none';
+
+    let container = document.querySelector('.estatisticas');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'estatisticas';
+        elPalavra.parentNode.insertBefore(container, elPalavra.nextSibling);
+    }
+
+    container.innerHTML = `
+        <div class="estatistica"><strong>${estatisticas.jogos}</strong><span>Jogos</span></div>
+        <div class="estatistica"><strong>${percentual}%</strong><span>Vitórias</span></div>
+        <div class="estatistica"><strong>${estatisticas.sequencia}</strong><span>Sequência</span></div>
+    `;
+
+    elModal.classList.add('aberto');
+
+    const fecharEstat = () => {
+        elPalavra.style.display = 'inline-block';
+        if (container) container.remove();
+        btns.jogarNovamente.removeEventListener('click', fecharEstat);
+    };
+    btns.jogarNovamente.addEventListener('click', fecharEstat);
+}
+
+// ---------- AVISOS ----------
+function mostrarAviso(texto) {
+    const aviso = document.createElement('div');
+    aviso.className = 'aviso';
+    aviso.textContent = texto;
+
+    elAvisos.appendChild(aviso);
+
+    setTimeout(() => {
+        aviso.classList.add('saindo');
+        setTimeout(() => aviso.remove(), 300);
+    }, 2500);
+}
