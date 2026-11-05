@@ -12,7 +12,6 @@ let cursorPos = 0;
 let jogoTerminado = false;
 
 // Cronômetro e estatísticas
-let tempoInicial = null;
 let intervaloTempo = null;
 let segundosDecorridos = 0;
 
@@ -28,12 +27,11 @@ const LIMITE_TENTATIVAS = 6;
 let dicionarioCompletoSet = new Set();
 
 /**
- * Carrega exclusivamente as palavras registradas em temas.js e dicionario.js
+ * Carrega as palavras registradas em temas.js e dicionario.js
  */
 function inicializarDicionario() {
   dicionarioCompletoSet.clear();
 
-  // 1. Adiciona todas as palavras cadastradas nos temas (temas.js)
   if (typeof palavrasPorTema !== 'undefined') {
     Object.values(palavrasPorTema).forEach(lista => {
       if (Array.isArray(lista)) {
@@ -44,7 +42,6 @@ function inicializarDicionario() {
     });
   }
 
-  // 2. Adiciona todas as palavras do dicionário local de 5 letras (dicionario.js)
   if (typeof dicionario5Letras !== 'undefined' && Array.isArray(dicionario5Letras)) {
     dicionario5Letras.forEach(p => {
       if (p) dicionarioCompletoSet.add(removerAcentos(p.trim().toLowerCase()));
@@ -120,7 +117,6 @@ function configurarEventos() {
     tratarEntrada(tecla);
   });
 
-  // Clique nas caixas do tabuleiro para reposicionar o cursor
   elTabuleiro.addEventListener('click', (e) => {
     const bloco = e.target.closest('.letra');
     if (!bloco || jogoTerminado) return;
@@ -174,11 +170,6 @@ function trocarTela(nomeTela) {
 
 function abrirTelaTemas() {
   modoAtual = 'normal';
-  const elModoTemas = document.getElementById('modo-temas');
-  if (elModoTemas) {
-    elModoTemas.textContent = 'Normal';
-    elModoTemas.className = 'etiqueta-modo modo-normal';
-  }
   const elTextoTemas = document.getElementById('texto-temas');
   if (elTextoTemas) {
     elTextoTemas.textContent = "Escolha um tema para jogar palavras de 5 letras.";
@@ -203,7 +194,6 @@ function renderizarListaTemas() {
   const lista = Object.keys(palavrasPorTema);
 
   lista.forEach(tema => {
-    // Garante que se existir a chave Verbos2 em palavrasPorTema, ela não seja renderizada
     if (tema === 'Verbos2') return;
 
     const btn = document.createElement('button');
@@ -233,12 +223,7 @@ function iniciarJogo(tema) {
   palavraSecreta = removerAcentos(palavraCrua.trim().toUpperCase());
 
   document.getElementById('tema-atual').textContent = tema;
-  
-  const elModoAtual = document.getElementById('modo-atual');
-  if (elModoAtual) elModoAtual.textContent = 'Normal';
-  
   document.getElementById('tela-jogo').className = 'tela ativa jogo-normal';
-  
   document.getElementById('contador-tentativas').textContent = `0/${LIMITE_TENTATIVAS}`;
   document.getElementById('vitorias').textContent = estatisticas.vitorias;
 
@@ -393,7 +378,7 @@ function submeterTentativa() {
   const segredoArray = palavraSecreta.split('');
   const resultado = new Array(palavraSecreta.length).fill('errada');
 
-  // 1. Identifica posições corretas (Verde)
+  // 1. Posicoes corretas (Verde)
   for (let i = 0; i < palavraSecreta.length; i++) {
     if (pal[i] === segredoArray[i]) {
       resultado[i] = 'correta';
@@ -401,7 +386,7 @@ function submeterTentativa() {
     }
   }
 
-  // 2. Identifica letras existentes (Amarelo)
+  // 2. Letras existentes (Amarelo)
   for (let i = 0; i < palavraSecreta.length; i++) {
     if (resultado[i] !== 'correta') {
       const pos = segredoArray.indexOf(pal[i]);
@@ -547,7 +532,7 @@ function mostrarEstatisticasModal() {
   const elTexto = document.getElementById('resultado-texto');
   const elPalavra = document.getElementById('resultado-palavra');
 
-  elTitulo.textContent = "Sua Estatísticas";
+  elTitulo.textContent = "Suas Estatísticas";
   elTexto.textContent = "";
   elPalavra.style.display = 'none';
 
@@ -589,7 +574,7 @@ function mostrarAviso(texto) {
 }
 
 // =====================================================
-// ANIMAÇÃO DE BLOCOS DO TERMO CAINDO (CORES ALTERNADAS)
+// ANIMAÇÃO DE BLOCOS DO TERMO CAINDO (CANVAS TOTAL)
 // =====================================================
 document.addEventListener('DOMContentLoaded', () => {
   const canvas = document.getElementById('canvas-fundo');
@@ -598,11 +583,10 @@ document.addEventListener('DOMContentLoaded', () => {
   const ctx = canvas.getContext('2d');
   const letras = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   
-  // Paleta de cores fiéis ao jogo Termo
   const estilosCores = [
-    { bg: 'rgba(34, 197, 94, 0.75)', border: 'rgba(52, 211, 153, 0.9)', texto: '#042f2e' }, // Verde (Correta)
-    { bg: 'rgba(234, 179, 8, 0.75)', border: 'rgba(253, 224, 71, 0.9)', texto: '#422006' }, // Amarelo (Existe)
-    { bg: 'rgba(51, 65, 85, 0.75)', border: 'rgba(148, 163, 184, 0.4)', texto: '#cbd5e1' }  // Cinza/Preto (Errada)
+    { bg: 'rgba(35, 134, 54, 0.75)', border: 'rgba(46, 160, 67, 0.9)', texto: '#ffffff' },
+    { bg: 'rgba(158, 106, 3, 0.75)', border: 'rgba(187, 128, 9, 0.9)', texto: '#ffffff' },
+    { bg: 'rgba(48, 54, 61, 0.75)', border: 'rgba(139, 148, 158, 0.4)', texto: '#8b949e' }
   ];
 
   const tamanhoBloco = 38;
@@ -627,14 +611,18 @@ document.addEventListener('DOMContentLoaded', () => {
   window.addEventListener('resize', ajustarTamanho);
 
   function desenharBlocoTermo(x, y, letra, estilo, opacidade) {
-    const raioBorda = 9;
+    const raioBorda = 8;
 
     ctx.save();
     ctx.globalAlpha = opacidade;
 
     ctx.fillStyle = estilo.bg;
     ctx.beginPath();
-    ctx.roundRect(x, y, tamanhoBloco, tamanhoBloco, raioBorda);
+    if (ctx.roundRect) {
+      ctx.roundRect(x, y, tamanhoBloco, tamanhoBloco, raioBorda);
+    } else {
+      ctx.rect(x, y, tamanhoBloco, tamanhoBloco);
+    }
     ctx.fill();
 
     ctx.strokeStyle = estilo.border;
@@ -642,7 +630,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.stroke();
 
     ctx.fillStyle = estilo.texto;
-    ctx.font = `bold 19px 'Bricolage Grotesque', sans-serif`;
+    ctx.font = `bold 18px 'Bricolage Grotesque', sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(letra, x + tamanhoBloco / 2, y + tamanhoBloco / 2);
@@ -659,11 +647,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const letra = letrasFixas[i];
       const estilo = estilosFixos[i];
 
-      let opacidade = 0.45;
+      let opacidade = 0.35;
       if (y < 100) {
-        opacidade = (y / 100) * 0.45;
+        opacidade = (y / 100) * 0.35;
       } else if (y > canvas.height - 150) {
-        opacidade = ((canvas.height - y) / 150) * 0.45;
+        opacidade = ((canvas.height - y) / 150) * 0.35;
       }
 
       if (opacidade > 0 && y > -tamanhoBloco) {
@@ -686,7 +674,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // =====================================================
-// MÚSICA DE FUNDO E CONTROLE DE ÁUDIO
+// MÚSICA DE FUNDO LO-FI HIP-HOP (AUTOPLAY AO CARREGAR)
 // =====================================================
 document.addEventListener('DOMContentLoaded', () => {
   const musica = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3');
@@ -696,16 +684,27 @@ document.addEventListener('DOMContentLoaded', () => {
   let tocando = false;
   const btnMusica = document.getElementById('btn-musica');
 
-  function alternarMusica() {
-    if (tocando) {
-      musica.pause();
+  function tocarAudio() {
+    return musica.play().then(() => {
+      tocando = true;
+      if (btnMusica) btnMusica.textContent = '🎵';
+    }).catch(err => {
       tocando = false;
       if (btnMusica) btnMusica.textContent = '🔇';
+    });
+  }
+
+  function pausarAudio() {
+    musica.pause();
+    tocando = false;
+    if (btnMusica) btnMusica.textContent = '🔇';
+  }
+
+  function alternarMusica() {
+    if (tocando) {
+      pausarAudio();
     } else {
-      musica.play().then(() => {
-        tocando = true;
-        if (btnMusica) btnMusica.textContent = '🎵';
-      }).catch(e => console.log("Aguardando interação para tocar áudio."));
+      tocarAudio();
     }
   }
 
@@ -716,56 +715,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  const iniciarNoPrimeiroClique = () => {
+  // Tenta tocar imediatamente assim que carrega o DOM
+  tocarAudio();
+
+  // Garante o início do áudio no primeiro toque/clique caso o navegador tenha bloqueado
+  const iniciarGarantido = () => {
     if (!tocando) {
-      alternarMusica();
+      tocarAudio();
     }
-    document.removeEventListener('click', iniciarNoPrimeiroClique);
-    document.removeEventListener('keydown', iniciarNoPrimeiroClique);
+    document.removeEventListener('pointerdown', iniciarGarantido);
+    document.removeEventListener('click', iniciarGarantido);
+    document.removeEventListener('keydown', iniciarGarantido);
   };
 
-  document.addEventListener('click', iniciarNoPrimeiroClique);
-  document.addEventListener('keydown', iniciarNoPrimeiroClique);
-});// =====================================================
-// MÚSICA DE FUNDO E CONTROLE DE ÁUDIO
-// =====================================================
-document.addEventListener('DOMContentLoaded', () => {
-  // URL atualizada para uma nova faixa Lo-Fi
-  const musica = new Audio('https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=lofi-chill-medium-version-110803.mp3');
-  musica.loop = true;
-  musica.volume = 0.2;
-
-  let tocando = false;
-  const btnMusica = document.getElementById('btn-musica');
-
-  function alternarMusica() {
-    if (tocando) {
-      musica.pause();
-      tocando = false;
-      if (btnMusica) btnMusica.textContent = '🔇';
-    } else {
-      musica.play().then(() => {
-        tocando = true;
-        if (btnMusica) btnMusica.textContent = '🎵';
-      }).catch(e => console.log("Aguardando interação para tocar áudio."));
-    }
-  }
-
-  if (btnMusica) {
-    btnMusica.addEventListener('click', (e) => {
-      e.stopPropagation();
-      alternarMusica();
-    });
-  }
-
-  const iniciarNoPrimeiroClique = () => {
-    if (!tocando) {
-      alternarMusica();
-    }
-    document.removeEventListener('click', iniciarNoPrimeiroClique);
-    document.removeEventListener('keydown', iniciarNoPrimeiroClique);
-  };
-
-  document.addEventListener('click', iniciarNoPrimeiroClique);
-  document.addEventListener('keydown', iniciarNoPrimeiroClique);
+  document.addEventListener('pointerdown', iniciarGarantido);
+  document.addEventListener('click', iniciarGarantido);
+  document.addEventListener('keydown', iniciarGarantido);
 });
