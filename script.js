@@ -732,3 +732,24 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', iniciarGarantido);
   document.addEventListener('keydown', iniciarGarantido);
 });
+// Adicione a referência ao novo modal no topo das seleções:
+const elModalAjuda = document.getElementById('modal-ajuda');
+const btnFecharAjuda = document.getElementById('btn-fechar-ajuda');
+
+// Na função configurarEventos(), substitua a ação antiga do btn-ajuda por:
+btns.ajuda.addEventListener('click', () => {
+  elModalAjuda.classList.add('aberto');
+});
+
+if (btnFecharAjuda) {
+  btnFecharAjuda.addEventListener('click', () => {
+    elModalAjuda.classList.remove('aberto');
+  });
+}
+
+// Fechar ao clicar fora do modal de ajuda:
+elModalAjuda.addEventListener('click', (e) => {
+  if (e.target === elModalAjuda) {
+    elModalAjuda.classList.remove('aberto');
+  }
+});
