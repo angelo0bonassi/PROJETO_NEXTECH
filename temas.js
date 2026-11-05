@@ -1,6 +1,7 @@
 const palavrasPorTema = {
   Geral: [
     "ABRIL", "ACASO", "ACHAR", "ADEUS", "AGORA", "AJUDA", "ALADO", "ALBUM",
+    
     "ALUNO", "AMADO", "AMIGO", "AMORA", "ANIMO", "ANTES", "APICE", "APOIO",
     "ARAME", "AREIA", "ARMAS", "ARROZ", "ARTES", "ASTRO", "ATLAS", "ATRAS",
     "AUDIO", "AVIAO", "BAILE", "BAIXO", "BALAO", "BANCO", "BANHO", "BARCO",
