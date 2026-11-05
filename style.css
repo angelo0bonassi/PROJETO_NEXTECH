@@ -730,3 +730,84 @@ footer {
     font-size: 11px;
     text-align: center;
 }
+/* ---------- MODAL DE AJUDA / GUIA DE JOGO ---------- */
+
+.modal-guia {
+  width: min(92vw, 440px);
+  text-align: left;
+  padding: 24px;
+  position: relative;
+  background: var(--surface);
+  backdrop-filter: blur(14px); /* Permite ver a chuva caindo no fundo */
+  border: 1px solid var(--border);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+}
+
+.fechar-modal {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-3);
+  color: var(--muted);
+  font-size: 14px;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+}
+
+.fechar-modal:hover {
+  color: var(--text);
+  background: var(--border-forte);
+}
+
+.guia-texto {
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.45;
+  margin-bottom: 20px;
+  padding-right: 24px;
+}
+
+.exemplo-bloco {
+  margin-bottom: 16px;
+}
+
+.linha-exemplo {
+  display: grid;
+  grid-template-columns: repeat(5, 42px);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.linha-exemplo .letra {
+  width: 42px;
+  height: 42px;
+  font-size: 20px;
+}
+
+.exemplo-bloco p {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.exemplo-bloco p strong {
+  color: var(--text);
+}
+
+.guia-notas {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.guia-notas p {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
