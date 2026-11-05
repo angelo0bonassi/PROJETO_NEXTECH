@@ -31,7 +31,7 @@
     <!-- TELA INICIAL -->
     <section class="tela ativa" id="tela-menu">
       <div class="hero">
-        <h1>Acerte a palavra de 5 letras </h1>
+        <h1>Acerte a palavra de 5 letras</h1>
         <p>Escolha um tema para começar a jogar.</p>
       </div>
 
@@ -142,6 +142,52 @@
     </section>
 
     <footer>Termo · feito por você</footer>
+  </div>
+
+  <!-- MODAL DE AJUDA / GUIA (ESTILO TERMO COM CHUVA NO FUNDO) -->
+  <div class="modal-fundo" id="modal-ajuda">
+    <div class="modal modal-guia" role="dialog" aria-modal="true">
+      <button class="fechar-modal" id="btn-fechar-ajuda" aria-label="Fechar">✕</button>
+      <p class="guia-texto">Descubra a palavra certa em 6 tentativas. Depois de cada tentativa, as peças mostram o quão perto você está da solução.</p>
+
+      <div class="exemplo-bloco">
+        <div class="linha-exemplo">
+          <div class="letra correta">T</div>
+          <div class="letra">U</div>
+          <div class="letra">R</div>
+          <div class="letra">M</div>
+          <div class="letra">A</div>
+        </div>
+        <p>A letra <strong>T</strong> faz parte da palavra e está na posição correta.</p>
+      </div>
+
+      <div class="exemplo-bloco">
+        <div class="linha-exemplo">
+          <div class="letra">V</div>
+          <div class="letra">I</div>
+          <div class="letra existe">O</div>
+          <div class="letra">L</div>
+          <div class="letra">A</div>
+        </div>
+        <p>A letra <strong>O</strong> faz parte da palavra mas em outra posição.</p>
+      </div>
+
+      <div class="exemplo-bloco">
+        <div class="linha-exemplo">
+          <div class="letra">P</div>
+          <div class="letra">U</div>
+          <div class="letra">L</div>
+          <div class="letra errada">G</div>
+          <div class="letra">A</div>
+        </div>
+        <p>A letra <strong>G</strong> não faz parte da palavra.</p>
+      </div>
+
+      <div class="guia-notas">
+        <p>Os acentos são preenchidos automaticamente, e não são considerados nas dicas.</p>
+        <p>As palavras podem possuir letras repetidas.</p>
+      </div>
+    </div>
   </div>
 
   <!-- FIM DE RODADA -->
