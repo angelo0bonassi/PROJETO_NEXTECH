@@ -26,9 +26,6 @@ const LIMITE_TENTATIVAS = 6;
 // ---------- CONJUNTO DE PALAVRAS PERMITIDAS ----------
 let dicionarioCompletoSet = new Set();
 
-/**
- * Carrega as palavras registradas em temas.js e dicionario.js
- */
 function inicializarDicionario() {
   dicionarioCompletoSet.clear();
 
@@ -72,10 +69,13 @@ const btns = {
   ajuda: document.getElementById('btn-ajuda'),
   estatisticas: document.getElementById('btn-estatisticas'),
   jogarNovamente: document.getElementById('btn-jogar-novamente'),
-  btnMenuModal: document.getElementById('btn-menu')
+  btnMenuModal: document.getElementById('btn-menu'),
+  fecharModalFim: document.getElementById('btn-fechar-modal'),
+  fecharAjuda: document.getElementById('btn-fechar-ajuda')
 };
 
 const elModal = document.getElementById('modal-fim');
+const elModalAjuda = document.getElementById('modal-ajuda');
 const elAvisos = document.getElementById('avisos');
 const elTabuleiro = document.getElementById('tabuleiro');
 const elTeclado = document.getElementById('teclado');
@@ -95,10 +95,33 @@ function configurarEventos() {
   btns.voltarTemas.addEventListener('click', () => trocarTela('menu'));
   btns.voltarMenu.addEventListener('click', () => trocarTela('menu'));
 
+  // Abertura e fechamento do Modal de Ajuda (?)
   btns.ajuda.addEventListener('click', () => {
-    mostrarAviso("Adivinhe a palavra secreta em 6 tentativas!");
+    elModalAjuda.classList.add('aberto');
   });
+
+  btns.fecharAjuda.addEventListener('click', () => {
+    elModalAjuda.classList.remove('aberto');
+  });
+
+  elModalAjuda.addEventListener('click', (e) => {
+    if (e.target === elModalAjuda) {
+      elModalAjuda.classList.remove('aberto');
+    }
+  });
+
+  // Abertura e fechamento do Modal de Estatísticas / Fim
   btns.estatisticas.addEventListener('click', mostrarEstatisticasModal);
+
+  btns.fecharModalFim.addEventListener('click', () => {
+    fecharModal();
+  });
+
+  elModal.addEventListener('click', (e) => {
+    if (e.target === elModal) {
+      fecharModal();
+    }
+  });
 
   btns.jogarNovamente.addEventListener('click', () => {
     fecharModal();
@@ -492,6 +515,8 @@ function abrirModalResultado(vitoria) {
   const elTexto = document.getElementById('resultado-texto');
   const elPalavra = document.getElementById('resultado-palavra');
 
+  limparContainerEstatisticas();
+
   if (vitoria) {
     elTitulo.textContent = "Você acertou! 🎉";
     elTexto.textContent = "Parabéns, a palavra era:";
@@ -500,12 +525,19 @@ function abrirModalResultado(vitoria) {
     elTexto.textContent = "A palavra correta era:";
   }
 
+  elPalavra.style.display = 'inline-block';
   elPalavra.textContent = palavraSecreta;
   elModal.classList.add('aberto');
 }
 
 function fecharModal() {
   elModal.classList.remove('aberto');
+  limparContainerEstatisticas();
+}
+
+function limparContainerEstatisticas() {
+  const container = elModal.querySelector('.estatisticas');
+  if (container) container.remove();
 }
 
 function carregarEstatisticas() {
@@ -536,27 +568,18 @@ function mostrarEstatisticasModal() {
   elTexto.textContent = "";
   elPalavra.style.display = 'none';
 
-  let container = document.querySelector('.estatisticas');
-  if (!container) {
-    container = document.createElement('div');
-    container.className = 'estatisticas';
-    elPalavra.parentNode.insertBefore(container, elPalavra.nextSibling);
-  }
+  limparContainerEstatisticas();
 
+  const container = document.createElement('div');
+  container.className = 'estatisticas';
   container.innerHTML = `
     <div class="estatistica"><strong>${estatisticas.jogos}</strong><span>Jogos</span></div>
     <div class="estatistica"><strong>${percentual}%</strong><span>Vitórias</span></div>
     <div class="estatistica"><strong>${estatisticas.sequencia}</strong><span>Sequência</span></div>
   `;
 
+  elPalavra.parentNode.insertBefore(container, elPalavra.nextSibling);
   elModal.classList.add('aberto');
-
-  const fecharEstat = () => {
-    elPalavra.style.display = 'inline-block';
-    if (container) container.remove();
-    btns.jogarNovamente.removeEventListener('click', fecharEstat);
-  };
-  btns.jogarNovamente.addEventListener('click', fecharEstat);
 }
 
 // ---------- AVISOS ----------
@@ -674,7 +697,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // =====================================================
-// MÚSICA DE FUNDO LO-FI HIP-HOP (AUTOPLAY AO CARREGAR)
+// MÚSICA DE FUNDO LO-FI HIP-HOP
 // =====================================================
 document.addEventListener('DOMContentLoaded', () => {
   const musica = new Audio('https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=lofi-study-112191.mp3');
@@ -715,10 +738,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Tenta tocar imediatamente assim que carrega o DOM
   tocarAudio();
 
-  // Garante o início do áudio no primeiro toque/clique caso o navegador tenha bloqueado
   const iniciarGarantido = () => {
     if (!tocando) {
       tocarAudio();
@@ -731,25 +752,4 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('pointerdown', iniciarGarantido);
   document.addEventListener('click', iniciarGarantido);
   document.addEventListener('keydown', iniciarGarantido);
-});
-// Adicione a referência ao novo modal no topo das seleções:
-const elModalAjuda = document.getElementById('modal-ajuda');
-const btnFecharAjuda = document.getElementById('btn-fechar-ajuda');
-
-// Na função configurarEventos(), substitua a ação antiga do btn-ajuda por:
-btns.ajuda.addEventListener('click', () => {
-  elModalAjuda.classList.add('aberto');
-});
-
-if (btnFecharAjuda) {
-  btnFecharAjuda.addEventListener('click', () => {
-    elModalAjuda.classList.remove('aberto');
-  });
-}
-
-// Fechar ao clicar fora do modal de ajuda:
-elModalAjuda.addEventListener('click', (e) => {
-  if (e.target === elModalAjuda) {
-    elModalAjuda.classList.remove('aberto');
-  }
 });
