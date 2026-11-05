@@ -144,7 +144,7 @@
     <footer>Termo · feito por você</footer>
   </div>
 
-  <!-- MODAL DE AJUDA / GUIA (ESTILO TERMO COM CHUVA NO FUNDO) -->
+  <!-- MODAL DE AJUDA / GUIA DE INSTRUÇÕES (?) -->
   <div class="modal-fundo" id="modal-ajuda">
     <div class="modal modal-guia" role="dialog" aria-modal="true">
       <button class="fechar-modal" id="btn-fechar-ajuda" aria-label="Fechar">✕</button>
@@ -190,13 +190,14 @@
     </div>
   </div>
 
-  <!-- FIM DE RODADA -->
+  <!-- MODAL DE FIM DE RODADA E ESTATÍSTICAS (▦) -->
   <div class="modal-fundo" id="modal-fim">
     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="resultado-titulo">
+      <button class="fechar-modal" id="btn-fechar-modal" aria-label="Fechar">✕</button>
       <h2 id="resultado-titulo">Você acertou!</h2>
       <p id="resultado-texto">A palavra era:</p>
       <div class="palavra-resposta" id="resultado-palavra">TERMO</div>
-      <div class="botoes-linha">
+      <div class="botoes-linha" id="botoes-modal">
         <button class="botao" id="btn-jogar-novamente">Jogar de novo</button>
         <button class="botao botao-secundario" id="btn-menu">Menu</button>
       </div>
