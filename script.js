@@ -325,31 +325,40 @@ function tratarEntrada(tecla) {
   const numColunas = palavraSecreta.length;
 
   if (tecla === 'APAGAR') {
-    if (tentativaAtual.length > 0) {
-      if (cursorPos < tentativaAtual.length) {
-        tentativaAtual = tentativaAtual.slice(0, cursorPos) + tentativaAtual.slice(cursorPos + 1);
-      } else {
-        tentativaAtual = tentativaAtual.slice(0, -1);
-        cursorPos = Math.max(0, tentativaAtual.length);
-      }
-      atualizarLinhaAtiva();
+    let arrayLetras = tentativaAtual.split('');
+    while (arrayLetras.length < numColunas) {
+      arrayLetras.push(' ');
     }
+
+    if (cursorPos > 0 && (cursorPos === tentativaAtual.length || arrayLetras[cursorPos] === ' ')) {
+      cursorPos--;
+    }
+
+    arrayLetras[cursorPos] = ' ';
+    
+    while (arrayLetras.length > 0 && arrayLetras[arrayLetras.length - 1] === ' ') {
+      arrayLetras.pop();
+    }
+    
+    tentativaAtual = arrayLetras.join('').trimEnd();
+    atualizarLinhaAtiva();
   } else if (tecla === 'ENTER') {
-    if (tentativaAtual.length < numColunas) {
+    let palavraLimpa = tentativaAtual.replace(/\s/g, '');
+    if (palavraLimpa.length < numColunas || tentativaAtual.includes(' ')) {
       tremerLinha();
-      mostrarAviso(`A palavra precisa ter ${numColunas} letras!`);
+      mostrarAviso(`A palavra precisa ter ${numColunas} letras completas!`);
       return;
     }
     submeterTentativa();
   } else {
     let arrayLetras = tentativaAtual.split('');
     
-    while (arrayLetras.length < cursorPos) {
+    while (arrayLetras.length < numColunas) {
       arrayLetras.push(' ');
     }
 
     arrayLetras[cursorPos] = tecla;
-    tentativaAtual = arrayLetras.join('');
+    tentativaAtual = arrayLetras.join('').trimEnd();
 
     cursorPos = Math.min(cursorPos + 1, numColunas - 1);
     atualizarLinhaAtiva();
@@ -370,7 +379,7 @@ function submeterTentativa() {
 
   const pal = removerAcentos(tentativaAtual.trim().toUpperCase());
 
-  if (pal.length !== palavraSecreta.length || pal.includes(' ')) {
+  if (pal.length !== palavraSecreta.length || pal.includes(' ') || pal.length < palavraSecreta.length) {
     tremerLinha();
     mostrarAviso("A palavra está incompleta!");
     return;
