@@ -10,6 +10,7 @@ let tentativas = [];
 let tentativaAtual = "";
 let cursorPos = 0;
 let jogoTerminado = false;
+let processandoTentativa = false; // Trava de segurança para evitar múltiplos Enters
 
 // Cronômetro e estatísticas
 let intervaloTempo = null;
@@ -135,14 +136,14 @@ function configurarEventos() {
 
   elTeclado.addEventListener('click', (e) => {
     const btn = e.target.closest('.tecla');
-    if (!btn) return;
+    if (!btn || processandoTentativa) return;
     const tecla = btn.dataset.tecla;
     tratarEntrada(tecla);
   });
 
   elTabuleiro.addEventListener('click', (e) => {
     const bloco = e.target.closest('.letra');
-    if (!bloco || jogoTerminado) return;
+    if (!bloco || jogoTerminado || processandoTentativa) return;
     const linhaIndex = tentativas.length;
     const linhaAtualEl = elTabuleiro.children[linhaIndex];
     
@@ -156,7 +157,7 @@ function configurarEventos() {
   });
 
   document.addEventListener('keydown', (e) => {
-    if (!telas.jogo.classList.contains('ativa') || jogoTerminado) return;
+    if (!telas.jogo.classList.contains('ativa') || jogoTerminado || processandoTentativa) return;
 
     const numColunas = palavraSecreta.length;
   
@@ -169,6 +170,7 @@ function configurarEventos() {
       cursorPos = Math.min(numColunas - 1, cursorPos + 1);
       atualizarLinhaAtiva();
     } else if (e.key === 'Enter') {
+      e.preventDefault(); // Evita comportamento padrão do navegador
       tratarEntrada('ENTER');
     } else if (e.key === 'Backspace') {
       tratarEntrada('APAGAR');
@@ -241,6 +243,7 @@ function iniciarJogo(tema) {
   tentativaAtual = "";
   cursorPos = 0;
   jogoTerminado = false;
+  processandoTentativa = false;
 
   let palavraCrua = sortearPalavra(tema);
   palavraSecreta = removerAcentos(palavraCrua.trim().toUpperCase());
@@ -320,7 +323,7 @@ function atualizarLinhaAtiva() {
 
 // ---------- ENTRADA ----------
 function tratarEntrada(tecla) {
-  if (jogoTerminado) return;
+  if (jogoTerminado || processandoTentativa) return;
 
   const numColunas = palavraSecreta.length;
 
@@ -358,7 +361,7 @@ function tratarEntrada(tecla) {
     }
 
     arrayLetras[cursorPos] = tecla;
-    tentativaAtual = arrayLetras.join('').trimEnd();
+    tentativaAtual = arrayLetres = arrayLetras.join('').trimEnd(); // Mantém compatibilidade
 
     cursorPos = Math.min(cursorPos + 1, numColunas - 1);
     atualizarLinhaAtiva();
@@ -375,7 +378,7 @@ function tremerLinha() {
 }
 
 function submeterTentativa() {
-  if (jogoTerminado) return;
+  if (jogoTerminado || processandoTentativa) return;
 
   const pal = removerAcentos(tentativaAtual.trim().toUpperCase());
 
@@ -391,6 +394,9 @@ function submeterTentativa() {
     return;
   }
 
+  // Ativa a trava para bloquear novas entradas e envios enquanto a animação ocorre
+  processandoTentativa = true;
+
   tentativas.push(pal);
 
   const linhaIndex = tentativas.length - 1;
@@ -398,6 +404,7 @@ function submeterTentativa() {
 
   if (!linha) {
     tentativas.pop();
+    processandoTentativa = false;
     mostrarAviso("Não foi possível registrar a tentativa.");
     return;
   }
@@ -445,6 +452,7 @@ function submeterTentativa() {
       tentativaAtual = "";
       cursorPos = 0;
       atualizarLinhaAtiva();
+      processandoTentativa = false; // Libera a trava para a próxima tentativa
     }
   }, palavraSecreta.length * 120 + 200);
 }
